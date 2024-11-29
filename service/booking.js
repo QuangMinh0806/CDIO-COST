@@ -140,46 +140,29 @@ const getAllBookingForAdmin = async (id, data) => {
                         b.checkin,
                         b.checkout,
                         (b.checkout - b.checkin) AS total_day,
-                        b.total_price + SUM(bs.total_price) AS total_price,
-                        COALESCE(SUM(DISTINCT p.amount), 0) AS amount,
-                        (SELECT 
-                            JSON_AGG(
-                                JSON_BUILD_OBJECT(
-                                    'room_name', r."name",
-                                    'room_number', rd.room_number,
-                                    'price', bd.price
+                        b.total_price + COALESCE(SUM(bs.total_price), 0) AS total_price,
+                        COALESCE(SUM(p.amount), 0) AS amount,
+                        JSONB_AGG(
+                            DISTINCT JSONB_BUILD_OBJECT(
+                                'room_name', r."name",
+                                'room_number', rd.room_number,
+                                'price', bd.price,
+                                'services', (
+                                    SELECT JSONB_AGG(
+                                        JSONB_BUILD_OBJECT(
+                                            'service_name', s.service_name,
+                                            'price', bs.price,
+                                            'quantity', bs.quantity,
+                                            'total_price', bs.total_price,
+                                            'createdAt', bs."createdAt"
+                                        )
+                                    )
+                                    FROM booking_services bs
+                                    JOIN services s ON s.id = bs."ServiceId"
+                                    WHERE bs."BookingDetailId" = bd.id
                                 )
                             )
-                        FROM 
-                            booking_detail bd
-                        JOIN 
-                            roomdetails rd ON rd.id = bd."RoomDetailId"
-                        JOIN 
-                            room r ON rd."RoomId" = r.id
-                        WHERE 
-                            bd."BookingId" = b.id
-                        ) AS room,
-                        (SELECT 
-                            JSON_AGG(
-                                JSON_BUILD_OBJECT(
-                                    'service_name', s.service_name,
-                                    'service_quantity', bs.quantity,
-                                    'service_price', bs.price,
-                                    'room_number', rd.room_number,
-                                    'createdAt', bs."createdAt"
-                                )
-                            )
-                        FROM 
-                            booking_services bs
-                        JOIN 
-                            services s ON s.id = bs."ServiceId"
-                        JOIN 
-                            booking_detail bd ON bs."BookingDetailId" = bd.id
-                        JOIN 
-                            roomdetails rd ON rd.id = bd."RoomDetailId"
-                        WHERE 
-                            bd."BookingId" = b.id
-                        ) AS service
+                        ) AS details
                     FROM 
                         booking b
                     JOIN 
@@ -188,9 +171,9 @@ const getAllBookingForAdmin = async (id, data) => {
                         payments p ON b.id = p."BookingId"
                     JOIN 
                         booking_detail bd ON b.id = bd."BookingId"
-                    JOIN 
+                    LEFT JOIN 
                         booking_services bs ON bs."BookingDetailId" = bd.id
-                    JOIN 
+                    LEFT JOIN 
                         services s ON s.id = bs."ServiceId"
                     JOIN 
                         roomdetails rd ON rd.id = bd."RoomDetailId"
@@ -223,46 +206,29 @@ const getBookingById = async (id) => {
                         b.checkin,
                         b.checkout,
                         (b.checkout - b.checkin) AS total_day,
-                        b.total_price + SUM(bs.total_price) AS total_price,
-                        COALESCE(SUM(DISTINCT p.amount), 0) AS amount,
-                        (SELECT 
-                            JSON_AGG(
-                                JSON_BUILD_OBJECT(
-                                    'room_name', r."name",
-                                    'room_number', rd.room_number,
-                                    'price', bd.price
+                        b.total_price + COALESCE(SUM(bs.total_price), 0) AS total_price,
+                        COALESCE(SUM(p.amount), 0) AS amount,
+                        JSONB_AGG(
+                            DISTINCT JSONB_BUILD_OBJECT(
+                                'room_name', r."name",
+                                'room_number', rd.room_number,
+                                'price', bd.price,
+                                'services', (
+                                    SELECT JSONB_AGG(
+                                        JSONB_BUILD_OBJECT(
+                                            'service_name', s.service_name,
+                                            'price', bs.price,
+                                            'quantity', bs.quantity,
+                                            'total_price', bs.total_price,
+                                            'createdAt', bs."createdAt"
+                                        )
+                                    )
+                                    FROM booking_services bs
+                                    JOIN services s ON s.id = bs."ServiceId"
+                                    WHERE bs."BookingDetailId" = bd.id
                                 )
                             )
-                        FROM 
-                            booking_detail bd
-                        JOIN 
-                            roomdetails rd ON rd.id = bd."RoomDetailId"
-                        JOIN 
-                            room r ON rd."RoomId" = r.id
-                        WHERE 
-                            bd."BookingId" = b.id
-                        ) AS room,
-                        (SELECT 
-                            JSON_AGG(
-                                JSON_BUILD_OBJECT(
-                                    'service_name', s.service_name,
-                                    'service_quantity', bs.quantity,
-                                    'service_price', bs.price,
-                                    'room_number', rd.room_number,
-                                    'createdAt', bs."createdAt"
-                                )
-                            )
-                        FROM 
-                            booking_services bs
-                        JOIN 
-                            services s ON s.id = bs."ServiceId"
-                        JOIN 
-                            booking_detail bd ON bs."BookingDetailId" = bd.id
-                        JOIN 
-                            roomdetails rd ON rd.id = bd."RoomDetailId"
-                        WHERE 
-                            bd."BookingId" = b.id
-                        ) AS service
+                        ) AS details
                     FROM 
                         booking b
                     JOIN 
@@ -271,9 +237,9 @@ const getBookingById = async (id) => {
                         payments p ON b.id = p."BookingId"
                     JOIN 
                         booking_detail bd ON b.id = bd."BookingId"
-                    JOIN 
+                    LEFT JOIN 
                         booking_services bs ON bs."BookingDetailId" = bd.id
-                    JOIN 
+                    LEFT JOIN 
                         services s ON s.id = bs."ServiceId"
                     JOIN 
                         roomdetails rd ON rd.id = bd."RoomDetailId"
