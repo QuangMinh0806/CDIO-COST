@@ -64,58 +64,65 @@ const createBooking = async (data) => {
     }
 }
 
-//chưa sửa
 //Tất cả đặt phòng của khách hàng
 const getAllBookingForCustomer = async (id) => {
     try {
         const sql = `SELECT 
-                        h.\`name\` AS hotel_name,
-                        b1.checkin,
-                        b1.checkout,
-                        b1.status,
-                        b1.createdAt,
-                        (
-                            SELECT JSON_ARRAYAGG(
-                                JSON_OBJECT(
-                                    'room_name', room_name,
-                                    'total_price', total_price,
-                                    'count', room_count
+                        h.name AS name_hotel,
+                        b.id AS booking_id,
+                        b."status" AS booking_status,
+                        b."createdAt",
+                        b.note AS note,
+                        b.checkin,
+                        b.checkout,
+                        (b.checkout - b.checkin) AS total_day,
+                        b.total_price + COALESCE(SUM(bs.total_price), 0) AS total_price,
+                        COALESCE(SUM(p.amount), 0) AS amount,
+                        JSONB_AGG(
+                            DISTINCT JSONB_BUILD_OBJECT(
+                                'room_name', r."name",
+                                'room_number', rd.room_number,
+                                'price', bd.price,
+                                'services', (
+                                    SELECT JSONB_AGG(
+                                        JSONB_BUILD_OBJECT(
+                                            'service_name', s.service_name,
+                                            'price', bs.price,
+                                            'quantity', bs.quantity,
+                                            'total_price', bs.total_price,
+                                            'createdAt', bs."createdAt"
+                                        )
+                                    )
+                                    FROM booking_services bs
+                                    JOIN services s ON s.id = bs."ServiceId"
+                                    WHERE bs."BookingDetailId" = bd.id
                                 )
                             )
-                            FROM (
-                                SELECT 
-                                    r.\`name\` AS room_name,
-                                    b.total_price,
-                                    COUNT(r.\`name\`) AS room_count
-                                FROM 
-                                    booking b
-                                JOIN 
-                                    roomdetails rd ON b.RoomDetailId = rd.id
-                                JOIN 
-                                    room r ON r.id = rd.RoomId
-                                WHERE 
-                                    b.UserId = u.id
-                                    AND b.createdAt = b1.createdAt
-                                GROUP BY 
-                                    r.\`name\`, b.total_price
-                            ) AS room_counts
                         ) AS details
                     FROM 
-                        booking b1
+                        booking b
                     JOIN 
-                        user u ON u.id = b1.UserId
+                        "user" u ON u.id = b."UserId"
+                    LEFT JOIN 
+                        payments p ON b.id = p."BookingId"
                     JOIN 
-                        roomdetails rd1 ON b1.RoomDetailId = rd1.id
+                        booking_detail bd ON b.id = bd."BookingId"
+                    LEFT JOIN 
+                        booking_services bs ON bs."BookingDetailId" = bd.id
+                    LEFT JOIN 
+                        services s ON s.id = bs."ServiceId"
                     JOIN 
-                        room r1 ON r1.id = rd1.RoomId
+                        roomdetails rd ON rd.id = bd."RoomDetailId"
                     JOIN 
-                        hotel h ON h.id = r1.HotelId
-                    WHERE 
+                        room r ON rd."RoomId" = r.id
+                    JOIN
+                        hotel h ON h.id = r."HotelId"
+                    WHERE
                         u.id = ${id}
-                    GROUP BY 
-                        b1.createdAt
-                    ORDER BY 
-                        b1.createdAt DESC;`
+                    GROUP BY
+                        h.name, b.id, b."status", b."createdAt", u.fullname, u.phone, b.note, b.checkin, b.checkout
+                    ORDER BY
+	                    b."createdAt";`
 
         const list_room = await sequelize.query(sql, { type: Sequelize.QueryTypes.SELECT });
         
