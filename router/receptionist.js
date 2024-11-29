@@ -4,8 +4,8 @@ const {authentication} = require("../middleware/authentication");
 
 
 const {createHotel, getHotel} = require("../controller/hotel");
-const {createRoom, getRoom} = require("../controller/room");
-const {createRoomDetail, getRoomDetail, getScheduleRoomDetail} = require("../controller/room_detail");
+const {createRoom, getRoom, getAllRoom} = require("../controller/room");
+const {createRoomDetail, getRoomDetail} = require("../controller/room_detail");
 const { getPricing, createPricing } = require("../controller/pricing");
 const { createServices, getAllServices } = require("../controller/services");
 const { getAllBookingForAdmin } = require("../controller/booking");
@@ -28,7 +28,7 @@ receptionistRouter.get("/room", authentication, getRoom);
 //room_detail
 receptionistRouter.post("/room_detail", createRoomDetail);
 receptionistRouter.get("/room_detail", authentication, getRoomDetail);
-receptionistRouter.get("/room_details", authentication, getScheduleRoomDetail);
+receptionistRouter.get("/room_details", authentication, getAllRoom);
 
 //pricing
 receptionistRouter.get("/pricing", authentication, getPricing);
@@ -37,6 +37,7 @@ receptionistRouter.post("/pricing", createPricing);
 
 //booking
 receptionistRouter.get("/booking", authentication, getAllBookingForAdmin);
+
 
 
 module.exports = receptionistRouter;

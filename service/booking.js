@@ -11,12 +11,12 @@ const find_room = async (id, count) => {
                 FROM 
                     roomdetails rd
                 JOIN 
-                    room r ON rd.roomid = r.id
+                    room r ON rd."RoomId" = r.id
                 WHERE 
                     r.id = ${id}
                     AND rd.id NOT IN (
                         SELECT 
-                            roomdetailid
+                            "RoomDetailId"
                         FROM 
                             inventory
                         WHERE 
@@ -46,7 +46,6 @@ const createBooking = async (data) => {
 
             
             const list_id = await find_room(RoomId, count);
-
             for (let i = 0; i < count; i++) {
                 booking_detail.push({
                     price : price,
@@ -129,7 +128,7 @@ const getAllBookingForCustomer = async (id) => {
 
 
 //Tất cả đặt phòng 
-const getAllBookingForAdmin = async (id, start, end) => {
+const getAllBookingForAdmin = async (id, data) => {
     try {
         const sql = `SELECT 
                         b.id AS booking_id,
@@ -198,7 +197,7 @@ const getAllBookingForAdmin = async (id, start, end) => {
                     JOIN 
                         room r ON rd."RoomId" = r.id
                     WHERE
-                        b."createdAt" BETWEEN ${start} AND ${end} AND r."HotelId" = ${id}
+                        b."createdAt" BETWEEN ${data.start} AND ${data.end} AND r."HotelId" = ${id}
                     GROUP BY
                         b.id, b."status", b."createdAt", u.fullname, u.phone, b.note, b.checkin, b.checkout;`
 

@@ -48,46 +48,4 @@ const getRoomDetail = async (id) => {
 
 
 
-const getScheduleRoomDetail = async (id, data) => {
-    try {
-        const sql = `WITH RECURSIVE DateRange AS (
-                        SELECT ${data.start} AS \`date\`
-                        UNION ALL
-                        SELECT DATE_ADD(date, INTERVAL 1 DAY)
-                        FROM DateRange
-                        WHERE date < DATE_SUB(${data.end}, INTERVAL 1 DAY)
-                    )
-
-                    SELECT
-                        d.\`date\`,
-                        rd.room_number,
-                        CASE 
-                            WHEN i.RoomDetailId IS NULL THEN 'empty'
-                            ELSE i.status
-                        END AS room_status
-                    FROM 
-                        DateRange d
-                    CROSS JOIN 
-                        roomdetails rd
-                    LEFT JOIN 
-                        inventory i ON rd.id = i.RoomDetailId 
-                        AND i.inventory_date = d.\`date\`
-                    JOIN
-                        room r ON r.id = rd.RoomId
-                    JOIN
-                        hotel h ON r.HotelId = h.id
-                    WHERE
-                        h.UserId = ${id}
-                    ORDER BY
-                        d.\`date\`, rd.room_number;`;
-        
-        const room = await sequelize.query(sql, { type: Sequelize.QueryTypes.SELECT });
-
-        return room;
-    } catch (error) {
-        console.log(error);
-        return "error";
-    }
-}
-
-module.exports = {createRoomDetail, getRoomDetail, getScheduleRoomDetail}
+module.exports = {createRoomDetail, getRoomDetail}

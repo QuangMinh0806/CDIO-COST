@@ -38,7 +38,7 @@ const getAllBookingForCustomer = async (req, res) => {
 
 const getAllBookingForAdmin = async (req, res) => {
 
-    const booking = await Booking.getAllBookingForAdmin(req.user.id);
+    const booking = await Booking.getAllBookingForAdmin(req.user.id, req.query);
 
     if (booking == "error") {
         res.status(505).json("Lỗi hệ thống");

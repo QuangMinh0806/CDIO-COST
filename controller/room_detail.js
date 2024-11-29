@@ -41,22 +41,4 @@ const getRoomDetail = async (req, res) => {
 }
 
 
-
-const getScheduleRoomDetail = async (req, res) => {
-
-    const room = await RoomDetail.getScheduleRoomDetail(req.user.id, req.query);
-
-    if (room == "error") {
-        res.status(505).json("Lỗi hệ thống");
-    }
-    else {
-        res.status(201).json({
-            status: true,
-            message: "Danh sách phòng",
-            room
-        })
-    }
-
-}
-
-module.exports = { createRoomDetail, getRoomDetail, getScheduleRoomDetail}
+module.exports = { createRoomDetail, getRoomDetail}

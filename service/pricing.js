@@ -22,10 +22,9 @@ const createPricing = async (data) => {
     }
 }
 
-//chua sua
 const getPricing = async (id) => {
     try {
-        const sql = `WITH price AS(
+        const sql = `WITH price AS (
                         SELECT
                             p.id,
                             r.name,
@@ -35,34 +34,31 @@ const getPricing = async (id) => {
                         FROM 
                             room r
                         JOIN 
-                            pricing p ON p.RoomId = r.id
+                            pricing p ON p."RoomId" = r.id
                         JOIN 
-                            hotel h ON r.HotelId = h.id
-                        JOIN 
-                            roomdetails rd ON rd.RoomId = r.id
+                            hotel h ON r."HotelId" = h.id
                         WHERE
-                            h.UserId = ${id}
+                            h."UserId" = ${id}
                         GROUP BY 
-                            p.id
+                            p.id, r.name, p.start_date, p.end_date, p.price
                     )
-
                     SELECT 
                         p.name,
-                        JSON_ARRAYAGG(
-                            JSON_OBJECT(
-                                'room_name', pr.\`name\`,
+                        json_agg(
+                            json_build_object(
+                                'room_name', pr.name,
                                 'start_date', pr.start_date,
                                 'end_date', pr.end_date,
                                 'price', pr.price,
                                 'pricing_id', pr.id
                             )
-                        ) as details
+                        ) AS details
                     FROM 
                         pricing p
                     JOIN 
                         price pr ON p.id = pr.id
                     GROUP BY
-                        p.name`;
+                        p.name;`;
         
         const pricing = await sequelize.query(sql, { type: Sequelize.QueryTypes.SELECT });
 

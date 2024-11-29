@@ -15,29 +15,30 @@ const createRoom = async (data) => {
         if(check){
             return -1;
         }
-    
+
         await Room.create(data);
     } catch (error) {
         console.log(error);
         return "error";
     }
 }
-//da sua
+
 //Gợi ý phòng
 const getSuggestRoom = async (id, data) => {
     try {
         const sql = `WITH RECURSIVE DateRange AS (
-                        SELECT DATE ${start} AS "date"
+                        SELECT DATE ${data.start} AS "date"
                         UNION ALL
                         SELECT ("date" + INTERVAL '1 day')::DATE
                         FROM DateRange
-                        WHERE "date" < DATE ${end} - INTERVAL '1 day'
+                        WHERE "date" < DATE ${data.end} - INTERVAL '1 day'
                     )
 
                     SELECT 
                         r.id AS room_id,
                         rd.id AS room_detail_id,
                         r.name AS room_name, 
+                        r.adult_count,
                         SUM(
                             COALESCE(
                                 (SELECT p.price FROM pricing p 
@@ -53,16 +54,16 @@ const getSuggestRoom = async (id, data) => {
                         room r ON rd."RoomId" = r.id
                     LEFT JOIN 
                         inventory i ON rd.id = i."RoomDetailId" 
-                                AND i.inventory_date BETWEEN '2024-09-25' AND '2024-09-30'
+                                AND i.inventory_date BETWEEN  ${data.start} AND  ${data.end}
                     WHERE
-                        r."HotelId" = ${id} AND i."RoomDetailId" IS NULL AND r.adult_count <= ${people}
+                        r."HotelId" = ${id} AND i."RoomDetailId" IS NULL AND r.adult_count <= ${data.num}
                     GROUP BY 
                         rd.id, r.id, r.name;`;
 
         const room = await sequelize.query(sql, { type: Sequelize.QueryTypes.SELECT });
         let result = [];
         find_room(room, 0, data.num, [], result);
-
+        
         return convertData(result);
     } catch (error) {
         console.log(error);
@@ -70,16 +71,16 @@ const getSuggestRoom = async (id, data) => {
     }
 }
 
-//da sua
+
 //Danh sách phòng trống của khách sạn
 const getAllRoom = async (id, data) => {
     try {
         const sql = `WITH RECURSIVE DateRange AS (
-                        SELECT DATE ${start} AS "date"
+                        SELECT DATE ${data.start} AS "date"
                         UNION ALL
                         SELECT ("date" + INTERVAL '1 day')::DATE
                         FROM DateRange
-                        WHERE "date" < DATE ${end} - INTERVAL '1 day'
+                        WHERE "date" < DATE ${data.end} - INTERVAL '1 day'
                     )
 
                     SELECT
@@ -102,7 +103,7 @@ const getAllRoom = async (id, data) => {
                         inventory i 
                         ON rd.id = i."RoomDetailId" 
                         AND i.inventory_date = d."date"
-                    JOIN
+                    LEFT JOIN
                         booking_detail bd ON bd."RoomDetailId" = rd.id
                     JOIN
                         room r ON r.id = rd."RoomId"
@@ -123,24 +124,23 @@ const getAllRoom = async (id, data) => {
     }
 }
 
-//da sua
+
 const getRoom = async (id) => {
     try {
         const sql = `SELECT 
                         r.id,
                         r.name AS room_name,
+                        r.adult_count,
                         r.price_per_night,
                         COUNT(rd.id) AS room_count
                     FROM 
                         Room r
-                    JOIN 
-                        Hotel h ON r."HotelId" = h.id
-                    JOIN 
+                    LEFT JOIN 
                         RoomDetails rd ON rd."RoomId" = r.id
                     WHERE
-                        h."UserId" = ${id}
+                        r."HotelId" = ${id}
                     GROUP BY
-                        r.id, r.name, r.price_per_night`;
+                        r.id`;
         
         const room = await sequelize.query(sql, { type: Sequelize.QueryTypes.SELECT });
 
