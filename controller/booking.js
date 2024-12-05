@@ -56,7 +56,7 @@ const getAllBookingForAdmin = async (req, res) => {
 
 const getBookingById = async (req, res) => {
 
-    const room = await Booking.getBookingById(req.param.id);
+    const room = await Booking.getBookingById(req.params.id);
 
     if (room == "error") {
         res.status(505).json("Lỗi hệ thống");

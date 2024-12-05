@@ -42,7 +42,7 @@ const getSuggestRoom = async (req, res) => {
 }
 
 
-//Tất cả phòng trống của khách sạn
+//Trạng thái của phòng trong khách sạn
 const getAllRoom = async (req, res) => {
 
     const room = await Room.getAllRoom(req.user.id, req.query);
@@ -60,6 +60,23 @@ const getAllRoom = async (req, res) => {
 
 }
 
+//Tất cả phòng trống của khách sạn
+const getRoomEmpty = async (req, res) => {
+
+    const room = await Room.getRoomEmpty(req.params.id, req.query);
+
+    if (room == "error") {
+        res.status(505).json("Lỗi hệ thống");
+    }
+    else {
+        res.status(201).json({
+            status: true,
+            message: "Danh sách phòng",
+            room
+        })
+    }
+
+}
 
 const getRoom = async (req, res) => {
 
@@ -78,5 +95,22 @@ const getRoom = async (req, res) => {
 
 }
 
+const getRoomById = async (req, res) => {
 
-module.exports = {createRoom, getSuggestRoom, getAllRoom, getRoom}
+    const room = await Room.getRoomById(req.params.id);
+
+    if (room == "error") {
+        res.status(505).json("Lỗi hệ thống");
+    }
+    else {
+        res.status(201).json({
+            status: true,
+            message: "Thông tin phòng",
+            room
+        })
+    }
+
+}
+
+
+module.exports = {createRoom, getSuggestRoom, getAllRoom, getRoom, getRoomById, getRoomEmpty}
