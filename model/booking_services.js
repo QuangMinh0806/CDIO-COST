@@ -6,8 +6,7 @@ const { Booking_Detail } = require('./booking_detail');
 const Booking_Services = sequelize.define("Booking_Services", 
     {
         quantity: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
+            type: DataTypes.INTEGER
         },
         price: DataTypes.INTEGER,
         total_price: DataTypes.INTEGER,

@@ -65,7 +65,7 @@ const getAllServices = async (id) => {
 
 const bookingServices = async (data) => {
     try {
-        await Booking_Services.create(data);
+        await Booking_Services.bulkCreate(data);
     } catch (error) {
         console.log(error);
         return "error";

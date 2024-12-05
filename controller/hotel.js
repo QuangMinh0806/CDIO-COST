@@ -39,4 +39,20 @@ const getHotel = async (req, res) => {
 
 }
 
-module.exports = { createHotel, getHotel}
+const findHotel = async (req, res) => {
+    const hotel = await Hotel.findHotel(req.query);
+
+    if (hotel == "error") {
+        res.status(505).json("Lỗi hệ thống");
+    }
+    else {
+        res.status(201).json({
+            status: true,
+            message: "Danh sách khách sạn",
+            hotel
+        })
+    }
+
+}
+
+module.exports = { createHotel, getHotel, findHotel}

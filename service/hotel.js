@@ -1,6 +1,7 @@
 const {Hotel} = require("../model/hotel");
 const {Sequelize, Op} = require("sequelize");
 const { sequelize } = require("../config/mysql");
+const { find_room } = require("../helper/find_room");
 
 const createHotel = async (data) => {
     try {
@@ -42,4 +43,59 @@ const getHotel = async (id) => {
     }
 }
 
-module.exports = {createHotel, getHotel}
+
+
+const findHotel = async (data) => {
+    try {
+        const sql = `WITH RECURSIVE DateRange AS (
+                        SELECT DATE '2024-11-11' AS "date"
+                        UNION ALL
+                        SELECT ("date" + INTERVAL '1 day')::DATE
+                        FROM DateRange
+                        WHERE "date" < DATE '2024-11-14' - INTERVAL '1 day'
+                    )
+
+                    SELECT
+                        h.name AS hotel_name,
+                        JSONB_AGG(
+                            DISTINCT JSONB_BUILD_OBJECT(
+                                'room_id', r.id,
+                                'room_detail_id', rd.id,
+                                'room_name', r.name,
+                                'adult_count', r.adult_count,
+                                'total_price', (
+                                    SELECT SUM(
+                                        COALESCE(
+                                            (SELECT p.price FROM pricing p 
+                                            WHERE p."RoomId" = r.id AND d.date BETWEEN p.start_date AND p.end_date LIMIT 1), 
+                                            r.price_per_night
+                                        )
+                                    )
+                                    FROM DateRange d
+                                )
+                            )
+                        ) AS room_empty
+                    FROM 
+                        roomdetails rd
+                    LEFT JOIN 
+                        inventory i ON rd.id = i."RoomDetailId" 
+                                AND i.inventory_date BETWEEN '2024-11-11' AND  '2024-11-14'
+                    JOIN
+                        room r ON r.id = rd."RoomId"
+                    JOIN
+                        hotel h ON r."HotelId" = h.id
+                    WHERE
+                        i."RoomDetailId" IS NULL
+                    GROUP BY 
+                        h.name;`;
+        const hotel = await sequelize.query(sql, { type: Sequelize.QueryTypes.SELECT });
+
+        let result = [];
+        find_room(hotel, 0, 2, [], result);
+        return result;
+    } catch (error) {
+        console.log(error);
+        return "error";
+    }
+}
+module.exports = {createHotel, getHotel, findHotel}

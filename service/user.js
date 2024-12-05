@@ -4,6 +4,7 @@ const sendMail = require("../config/sendMail");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { Sequelize, Op} = require("sequelize");
+const { Hotel } = require("../model/hotel");
 
 const registerUser = async (data) => {
     try {
@@ -54,10 +55,6 @@ const activeUser = async(data) => {
 
 }
 
-const postUser = async (data) => {
-    await User.create(data);
-}
-
 
 
 const loginUser  = async (data) => {
@@ -67,6 +64,7 @@ const loginUser  = async (data) => {
                 email : data.email
             }
         })
+        
         if(!users){
             return -1;
         }
@@ -160,4 +158,4 @@ const findUser  = async (data) => {
 }
 
 
-module.exports = {registerUser, activeUser, loginUser, getUser, putUser, getAllUser, postUser, putUserForAdmin, findUser}
+module.exports = {registerUser, activeUser, loginUser, getUser, putUser, getAllUser, putUserForAdmin, findUser}

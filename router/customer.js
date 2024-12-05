@@ -5,6 +5,7 @@ const {authentication} = require("../middleware/authentication");
 const {getSuggestRoom, getAllRoom} = require("../controller/room");
 const {registerUser, activeUser, loginUser} = require("../controller/user");
 const {createBooking, getAllBookingForCustomer} = require("../controller/booking");
+const { findHotel } = require("../controller/hotel");
 
 
 
@@ -23,4 +24,7 @@ customerRouter.get("/booking", authentication, getAllBookingForCustomer);
 customerRouter.get("/room/:id/suggest", getSuggestRoom);
 customerRouter.get("/room/:id", getAllRoom);
 
+
+//hotel
+customerRouter.get("/search-hotel", findHotel);
 module.exports = customerRouter;

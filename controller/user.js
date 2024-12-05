@@ -69,14 +69,6 @@ const loginUser = async (req, res) => {
 }
 
 
-const postUser = async (req, res) => {
-    await User.postUser(req.body);
-    res.status(200).json({
-        success: true,
-        message: "Thêm nhân viên thành công",
-    });
-}
-
 const getUser = async (req, res) => {
     const user = await User.getUser(req.user.id);
     res.status(200).json({
@@ -132,4 +124,4 @@ const findUser = async (req, res) => {
     });
 }
 
-module.exports = { registerUser, activeUser, loginUser, getUser, putUser, getAllUser, postUser, putUserForAdmin, findUser }
+module.exports = { registerUser, activeUser, loginUser, getUser, putUser, getAllUser, putUserForAdmin, findUser }

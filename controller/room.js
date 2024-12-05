@@ -78,4 +78,5 @@ const getRoom = async (req, res) => {
 
 }
 
+
 module.exports = {createRoom, getSuggestRoom, getAllRoom, getRoom}

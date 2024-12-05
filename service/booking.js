@@ -268,7 +268,7 @@ const getBookingById = async (id) => {
 
 
 //Doanh thu theo thời gian
-const getReportTime = async (id) => {
+const getReportTime = async (id, data) => {
     try {
         const sql = `WITH BookingRevenue AS (
                         SELECT
@@ -286,7 +286,7 @@ const getReportTime = async (id) => {
                             room r ON rd."RoomId" = r.id
                         WHERE
                             r."HotelId" = ${id}
-                            AND p.payment_date BETWEEN ${start} AND ${end}
+                            AND p.payment_date BETWEEN ${data.start} AND ${data.end}
                         GROUP BY
                             p.id
                         ORDER BY 
@@ -314,7 +314,7 @@ const getReportTime = async (id) => {
 
 
 //Doanh thu theo dịch vụ
-const getReportService = async (id) => {
+const getReportService = async (id, data) => {
     try {
         const sql = `SELECT
                         s.service_name,
@@ -328,7 +328,7 @@ const getReportService = async (id) => {
                     LEFT JOIN 
                         booking b ON bd."BookingId" = b.id
                     LEFT JOIN 
-                        payments p ON p."BookingId" = b.id AND p.payment_date BETWEEN ${start} AND ${end} AND p.status = 'service'
+                        payments p ON p."BookingId" = b.id AND p.payment_date BETWEEN ${data.start} AND ${data.end} AND p.status = 'service'
                     JOIN 
                         hotel h ON h.id = s."HotelId"
                     WHERE
@@ -347,7 +347,7 @@ const getReportService = async (id) => {
 
 
 //Doanh thu theo phòng
-const getReportRoom = async (id) => {
+const getReportRoom = async (id, data) => {
     try {
         const sql = `SELECT
                         r.name AS room_name,
@@ -362,7 +362,7 @@ const getReportRoom = async (id) => {
                         booking b ON b.id = bd."BookingId"
                     LEFT JOIN 
                         payments p ON p."BookingId" = b.id 
-                                AND p.payment_date BETWEEN ${start} AND ${start}
+                                AND p.payment_date BETWEEN ${data.start} AND ${data.end}
                                 AND p."status" = 'hotel'
                     WHERE
                         r."HotelId" = ${id}

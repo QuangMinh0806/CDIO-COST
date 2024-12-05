@@ -36,20 +36,92 @@ const getAllBookingForCustomer = async (req, res) => {
 }
 
 
+
 const getAllBookingForAdmin = async (req, res) => {
 
-    const booking = await Booking.getAllBookingForAdmin(req.user.id, req.query);
+    const room = await Booking.getAllBookingForAdmin(req.user.id, req.query);
 
-    if (booking == "error") {
+    if (room == "error") {
         res.status(505).json("Lỗi hệ thống");
     }
     else {
         res.status(201).json({
             status: true,
-            message: "Danh sách đặt phòng",
-            booking
+            message: "Danh sách phòng",
+            room
         })
     }
+
 }
 
-module.exports = {createBooking, getAllBookingForCustomer, getAllBookingForAdmin}
+const getBookingById = async (req, res) => {
+
+    const room = await Booking.getBookingById(req.param.id);
+
+    if (room == "error") {
+        res.status(505).json("Lỗi hệ thống");
+    }
+    else {
+        res.status(201).json({
+            status: true,
+            message: "Chi tiết đơn đặt phòng",
+            room
+        })
+    }
+
+}
+
+
+const getReportService = async (req, res) => {
+
+    const room = await Booking.getReportService(req.user.id, req.query);
+
+    if (room == "error") {
+        res.status(505).json("Lỗi hệ thống");
+    }
+    else {
+        res.status(201).json({
+            status: true,
+            message: "Báo cáo theo dịch vụ",
+            room
+        })
+    }
+
+}
+
+
+const getReportRoom = async (req, res) => {
+
+    const room = await Booking.getReportRoom(req.user.id, req.query);
+
+    if (room == "error") {
+        res.status(505).json("Lỗi hệ thống");
+    }
+    else {
+        res.status(201).json({
+            status: true,
+            message: "Báo cáo theo phòng",
+            room
+        })
+    }
+
+}
+
+
+const getReportTime = async (req, res) => {
+
+    const room = await Booking.getReportTime(req.user.id, req.query);
+
+    if (room == "error") {
+        res.status(505).json("Lỗi hệ thống");
+    }
+    else {
+        res.status(201).json({
+            status: true,
+            message: "Báo cáo theo thời gian",
+            room
+        })
+    }
+
+}
+module.exports = {createBooking, getAllBookingForCustomer, getAllBookingForAdmin, getReportService, getReportTime, getReportRoom, getBookingById}
