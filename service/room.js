@@ -129,10 +129,12 @@ const getRoom = async (id) => {
                         COUNT(rd.id) AS room_count
                     FROM 
                         Room r
+                    JOIN
+                        Hotel h ON h.id = r."HotelId"
                     LEFT JOIN 
                         RoomDetails rd ON rd."RoomId" = r.id
                     WHERE
-                        r."HotelId" = ${id}
+                        h."UserId" = ${id}
                     GROUP BY
                         r.id`;
         

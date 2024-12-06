@@ -1,7 +1,7 @@
 const {Hotel} = require("../model/hotel");
 const {Sequelize, Op} = require("sequelize");
 const { sequelize } = require("../config/mysql");
-const { find_room_hotel } = require("../helper/find_room_search");
+const { find_room_hotel, convert} = require("../helper/find_room_search");
 
 const createHotel = async (data) => {
     try {
@@ -91,7 +91,7 @@ const findHotel = async (data) => {
         const hotel = await sequelize.query(sql, { type: Sequelize.QueryTypes.SELECT });
         
         const result = find_room_hotel(hotel, 2);
-        return result;
+        return convert(result);
     } catch (error) {
         console.log(error);
         return "error";

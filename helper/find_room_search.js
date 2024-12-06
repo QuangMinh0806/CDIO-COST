@@ -27,5 +27,45 @@ const find_room_hotel = (data, customer) =>{
     return result;
 }
 
+const convert = (data) => {
+    const groupedByHotel = data.reduce((acc, hotel) => {
+        const hotelName = hotel.hotel_name.trim();
+        if (!acc[hotelName]) {
+            acc[hotelName] = [];
+        }
+        acc[hotelName] = acc[hotelName].concat(hotel.rooms);
+        return acc;
+    }, {});
 
-module.exports = {find_room_hotel};
+    const result = Object.entries(groupedByHotel).map(([hotelName, rooms]) => {
+        const groupedRooms = rooms.reduce((acc, room) => {
+            const key = `${room.room_id}-${room.room_name}-${room.adult_count}-${room.total_price}`;
+            if (!acc[key]) {
+                acc[key] = {
+                    room_id: room.room_id,
+                    room_name: room.room_name,
+                    adult_count: room.adult_count,
+                    total_price: room.total_price,
+                    count: 0,
+                };
+            }
+            acc[key].count += 1;
+            return acc;
+        }, {});
+
+        const suggestions = Object.values(groupedRooms).reduce((acc, room, index) => {
+            const suggestKey = `suggest_${String(index + 1).padStart(2, '0')}`;
+            acc[suggestKey] = acc[suggestKey] || [];
+            acc[suggestKey].push(room);
+            return acc;
+        }, {});
+
+        return {
+            hotel_name: hotelName,
+            ...suggestions,
+        };
+    });
+
+    return result;
+}
+module.exports = {find_room_hotel, convert};
