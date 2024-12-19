@@ -2,6 +2,7 @@ const {Hotel} = require("../model/hotel");
 const {Sequelize, Op} = require("sequelize");
 const { sequelize } = require("../config/mysql");
 const { find_room_hotel, convert} = require("../helper/find_room_search");
+const { User } = require("../model/user");
 
 const createHotel = async (data) => {
     try {
@@ -14,7 +15,16 @@ const createHotel = async (data) => {
         if(check){
             return -1;
         }
-    
+        await User.update(
+            {
+                role : "admin"
+            },
+            {
+                where : {
+                    id : data.UserId
+                }
+            }
+        )
         await Hotel.create(data);
     } catch (error) {
         console.log(error);

@@ -13,7 +13,8 @@ const createBooking = async (req, res) => {
     else {
         res.status(201).json({
             status: true,
-            message: "Đặt phòng thành công"
+            message: "Đặt phòng thành công",
+            booking
         })
     }
 }

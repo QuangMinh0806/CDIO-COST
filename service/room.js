@@ -75,9 +75,18 @@ const getSuggestRoom = async (id, data) => {
 //Trạng thái của phòng trong khách sạn
 const getAllRoom = async (id, data) => {
     try {
+
+        let select = "";
+
+        if(data.status){
+            select = "AND b.status IN" + data.status;
+        }
+
         const sql = `SELECT
                         b.id AS booking_id,
                         rd.room_number,
+                        r.id AS room_id,
+                        u.fullname,
                         bd.id AS booking_detail_id,
                         CASE 
                             WHEN b.checkin < ${data.start} THEN ${data.start}
@@ -91,6 +100,8 @@ const getAllRoom = async (id, data) => {
                     FROM
                         booking b
                     JOIN
+                        "user" u ON u.id = b."UserId"
+                    JOIN
                         booking_detail bd ON bd."BookingId" = b.id
                     JOIN
                         roomdetails rd ON rd.id = bd."RoomDetailId"
@@ -103,7 +114,7 @@ const getAllRoom = async (id, data) => {
                             OR b.checkout BETWEEN ${data.start} AND ${data.end}
                         )
                     WHERE
-                        h."UserId" = ${id}
+                        h."UserId" = ${id} ${select}
                     ORDER BY
                         rd.room_number;`;
 
@@ -173,7 +184,18 @@ const getRoomEmpty = async (id, data) => {
                         JSONB_AGG(
                             DISTINCT JSONB_BUILD_OBJECT(
                                 'room_id', r.id,
-                                'room_detail_id', rd.id,
+                                'count',
+                                    (
+                                        SELECT
+                                            COUNT(RD.ID)
+                                        FROM
+                                            ROOMDETAILS RD
+                                            LEFT JOIN INVENTORY I ON RD.ID = I."RoomDetailId"
+                                            AND I.INVENTORY_DATE BETWEEN ${data.start} AND  ${data.end}
+                                        WHERE
+                                            RD."RoomId" = R.ID
+                                            AND I."RoomDetailId" IS NULL
+                                    ),
                                 'room_name', r.name,
                                 'adult_count', r.adult_count,
                                 'total_price', (

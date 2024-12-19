@@ -4,8 +4,9 @@ const {Payments} = require("../model/payment");
 
 const {Sequelize, Op} = require("sequelize");
 const { sequelize } = require("../config/mysql");
+const { User } = require("../model/user");
 
-const find_room = async (id, count) => {
+const find_room = async (id, count, start, end) => {
     const sql = `SELECT 
                     rd.id
                 FROM 
@@ -20,7 +21,7 @@ const find_room = async (id, count) => {
                         FROM 
                             inventory
                         WHERE 
-                            inventory_date BETWEEN '2024-11-05' AND '2024-11-10' 
+                            inventory_date BETWEEN '${start}' AND '${end}'
                     )
                 ORDER BY 
                     rd.id ASC
@@ -32,7 +33,14 @@ const find_room = async (id, count) => {
 }
 const createBooking = async (data) => {
     try {
-
+        const check = await User.findOne({
+            where : {
+                id : data.booking.UserId
+            }
+        })
+        if(check.role == "admin"){
+            data.booking.UserId = null;
+        }
         const booking = await Booking.create(data.booking);
 
         const booking_detail = [];
@@ -45,7 +53,7 @@ const createBooking = async (data) => {
             } = value;
 
             
-            const list_id = await find_room(RoomId, count);
+            const list_id = await find_room(RoomId, count, data.booking.checkin, data.booking.checkout);
             for (let i = 0; i < count; i++) {
                 booking_detail.push({
                     price : price,
@@ -57,12 +65,15 @@ const createBooking = async (data) => {
         
         await Booking_Detail.bulkCreate(booking_detail);
 
+        return booking.id;
 
     } catch (error) {
         console.log(error);
         return "error";
     }
 }
+
+
 
 //Tất cả đặt phòng của khách hàng
 const getAllBookingForCustomer = async (id) => {

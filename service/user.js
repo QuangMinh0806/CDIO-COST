@@ -59,12 +59,13 @@ const activeUser = async(data) => {
 
 const loginUser  = async (data) => {
     try {
-        const users = await User.findOne({
+        let users = await User.findOne({
             where : {
                 email : data.email
             }
         })
         
+
         if(!users){
             return -1;
         }
@@ -74,6 +75,13 @@ const loginUser  = async (data) => {
                 return -2;
             }
             else{
+                const hotel = await Hotel.findOne({
+                    where : {
+                        UserId : users.id
+                    }
+                })
+
+                users.dataValues.hotel_id = hotel.id; 
                 return users;
             }
 

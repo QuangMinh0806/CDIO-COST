@@ -14,6 +14,9 @@ const Booking = sequelize.define("Booking",
             defaultValue : "pending"
         },
         note: DataTypes.TEXT,
+        fullname: DataTypes.TEXT,
+        email: DataTypes.TEXT,
+        numberphone: DataTypes.TEXT,
     },
     {
         tableName: "booking",
