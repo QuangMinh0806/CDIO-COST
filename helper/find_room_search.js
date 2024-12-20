@@ -27,45 +27,57 @@ const find_room_hotel = (data, customer) =>{
     return result;
 }
 
-const convert = (data) => {
-    const groupedByHotel = data.reduce((acc, hotel) => {
-        const hotelName = hotel.hotel_name.trim();
-        if (!acc[hotelName]) {
-            acc[hotelName] = [];
-        }
-        acc[hotelName] = acc[hotelName].concat(hotel.rooms);
-        return acc;
-    }, {});
-
-    const result = Object.entries(groupedByHotel).map(([hotelName, rooms]) => {
-        const groupedRooms = rooms.reduce((acc, room) => {
-            const key = `${room.room_id}-${room.room_name}-${room.adult_count}-${room.total_price}`;
-            if (!acc[key]) {
-                acc[key] = {
+const convert= (hotels) =>{
+    const convertedHotels = hotels.map(hotel => {
+        const roomGroups = {};
+    
+        hotel.rooms.forEach(room => {
+            const key = `option_${room.room_id}`;
+            if (!roomGroups[key]) {
+                roomGroups[key] = [];
+            }
+    
+            const existingRoom = roomGroups[key].find(r => r.room_name === room.room_name);
+            if (existingRoom) {
+                existingRoom.count++;
+            } else {
+                roomGroups[key].push({
                     room_id: room.room_id,
                     room_name: room.room_name,
                     adult_count: room.adult_count,
                     total_price: room.total_price,
-                    count: 0,
-                };
+                    count: 1
+                });
             }
-            acc[key].count += 1;
-            return acc;
-        }, {});
-
-        const suggestions = Object.values(groupedRooms).reduce((acc, room, index) => {
-            const suggestKey = `suggest_${String(index + 1).padStart(2, '0')}`;
-            acc[suggestKey] = acc[suggestKey] || [];
-            acc[suggestKey].push(room);
-            return acc;
-        }, {});
-
+        });
+    
         return {
-            hotel_name: hotelName,
-            ...suggestions,
+            hotel_name: hotel.hotel_name,
+            rooms: roomGroups
         };
     });
-
-    return result;
+    
 }
-module.exports = {find_room_hotel, convert};
+
+function filterHotelsByPrice(hotels, start, end) {
+    return hotels.map(hotel => {
+        const filteredRooms = {};
+
+        for (const [option, rooms] of Object.entries(hotel.rooms)) {
+            const filtered = rooms.filter(room => {
+                const totalCost = room.total_price * room.count;
+                return totalCost >= start && totalCost <= end;
+            });
+
+            if (filtered.length > 0) {
+                filteredRooms[option] = filtered;
+            }
+        }
+
+        return {
+            hotel_name: hotel.hotel_name,
+            rooms: filteredRooms
+        };
+    }).filter(hotel => Object.keys(hotel.rooms).length > 0);
+}
+module.exports = {find_room_hotel};

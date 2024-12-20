@@ -12,13 +12,11 @@ const tokenCookie = async (user, statusCode, res) => {
 
     res.cookie("token", token, option);
     const role = user.role;
-    const hotel_id = user.dataValues.hotel_id;
     res.status(statusCode).json({
         success : true,
         message : "Đăng nhập thành công",
         token,
-        role,
-        hotel_id
+        role
     })
 }
 

@@ -75,13 +75,6 @@ const loginUser  = async (data) => {
                 return -2;
             }
             else{
-                const hotel = await Hotel.findOne({
-                    where : {
-                        UserId : users.id
-                    }
-                })
-
-                users.dataValues.hotel_id = hotel.id; 
                 return users;
             }
 

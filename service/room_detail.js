@@ -25,7 +25,7 @@ const createRoomDetail = async (data) => {
 const getRoomDetail = async (id) => {
     try {
         const sql = `SELECT 
-                        r.id AS room_id,
+                        r.id,
                         rd.room_number,
                         r.name AS room_name,
                         r.price_per_night
