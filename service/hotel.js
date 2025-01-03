@@ -67,24 +67,9 @@ const findHotel = async (data) => {
 
                     SELECT
                         h.name AS hotel_name,
-                        JSONB_AGG(
-                            DISTINCT JSONB_BUILD_OBJECT(
-                                'room_id', r.id,
-                                'room_detail_id', rd.id,
-                                'room_name', r.name,
-                                'adult_count', r.adult_count,
-                                'total_price', (
-                                    SELECT SUM(
-                                        COALESCE(
-                                            (SELECT p.price FROM pricing p 
-                                            WHERE p."RoomId" = r.id AND d.date BETWEEN p.start_date AND p.end_date LIMIT 1), 
-                                            r.price_per_night
-                                        )
-                                    )
-                                    FROM DateRange d
-                                )
-                            )
-                        ) AS room_empty
+                        h.description,
+                        h.image,
+                        h.city
                     FROM 
                         roomdetails rd
                     LEFT JOIN 
@@ -97,11 +82,9 @@ const findHotel = async (data) => {
                     WHERE
                         i."RoomDetailId" IS NULL
                     GROUP BY 
-                        h.name;`;
+                        h.name, h.description, h.image, h.city;`;
         const hotel = await sequelize.query(sql, { type: Sequelize.QueryTypes.SELECT });
-        const result = find_room_hotel(hotel, 2);
-        return  result;
-        //return convert(result);
+        return hotel;
     } catch (error) {
         console.log(error);
         return "error";

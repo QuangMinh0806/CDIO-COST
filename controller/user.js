@@ -124,4 +124,13 @@ const findUser = async (req, res) => {
     });
 }
 
-module.exports = { registerUser, activeUser, loginUser, getUser, putUser, getAllUser, putUserForAdmin, findUser }
+
+const getAllUserGroup = async (req, res) => {
+    const user = await User.getAllUserGroup();
+    res.status(200).json({
+        success: true,
+        message: "Danh sách người dùng",
+        user
+    });
+}
+module.exports = { registerUser, activeUser, loginUser, getUser, putUser, getAllUser, putUserForAdmin, findUser, getAllUserGroup }

@@ -123,18 +123,43 @@ const putUserForAdmin  = async (id, data) => {
 }
 
 
-const getAllUser  = async (data) => {
-    const { count, rows: user } = await User.findAndCountAll({
-        attributes : ["id", "fullName", "email", "role"],
-        where : {
-            role : data
-        },
-        order : [
-            ["id", "ASC"]
-        ]
-    });
+const getAllUserGroup  = async (id) => {
+    const sql = `WITH tmp AS (
+                    SELECT
+                        b.id AS booking_id,
+                        b.total_price,
+                        u.id,
+                        u.fullname
+                    FROM
+                        booking b
+                    JOIN
+                        "user" u ON b."UserId" = u.id
+                    JOIN
+                        booking_detail bd ON bd."BookingId" = b.id
+                    JOIN
+                        roomdetails rd ON rd.id = bd."RoomDetailId"
+                    JOIN
+                        room r ON r.id = rd."RoomId"
+                    JOIN
+                        hotel h ON r."HotelId" = h.id
+                    WHERE
+                        h."UserId" = ${id}
+                    GROUP BY
+                        b.id, u.id
+                )
+                SELECT
+                COUNT(p.booking_id) AS total,
+                SUM(p.total_price) AS price,
+                p.id,
+                p.fullname
+                FROM
+                    tmp p
+                GROUP BY
+                    p.id, p.fullname;`;
 
-    return { count, user };
+    const user = await sequelize.query(sql, { type: Sequelize.QueryTypes.SELECT });
+
+    return user;
 }
 
 
@@ -159,4 +184,4 @@ const findUser  = async (data) => {
 }
 
 
-module.exports = {registerUser, activeUser, loginUser, getUser, putUser, getAllUser, putUserForAdmin, findUser}
+module.exports = {registerUser, activeUser, loginUser, getUser, putUser, getAllUserGroup, putUserForAdmin, findUser}
