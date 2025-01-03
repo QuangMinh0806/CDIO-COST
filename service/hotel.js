@@ -58,31 +58,33 @@ const getHotel = async (id) => {
 const findHotel = async (data) => {
     try {
         const sql = `WITH RECURSIVE DateRange AS (
-                        SELECT DATE '2024-11-11' AS "date"
+                        SELECT DATE ${data.start} AS "date"
                         UNION ALL
                         SELECT ("date" + INTERVAL '1 day')::DATE
                         FROM DateRange
-                        WHERE "date" < DATE '2024-11-14' - INTERVAL '1 day'
+                        WHERE "date" < DATE ${data.end} - INTERVAL '1 day'
                     )
 
                     SELECT
                         h.name AS hotel_name,
                         h.description,
                         h.image,
-                        h.city
+                        h.city,
+                        h.address
                     FROM 
                         roomdetails rd
                     LEFT JOIN 
                         inventory i ON rd.id = i."RoomDetailId" 
-                                AND i.inventory_date BETWEEN '2024-11-11' AND  '2024-11-14'
+                                AND i.inventory_date BETWEEN ${data.start} AND  ${data.end}
                     JOIN
                         room r ON r.id = rd."RoomId"
                     JOIN
                         hotel h ON r."HotelId" = h.id
                     WHERE
-                        i."RoomDetailId" IS NULL
+                        i."RoomDetailId" IS NULL AND h.city LIKE '%${data.search}%'
                     GROUP BY 
-                        h.name, h.description, h.image, h.city;`;
+                        h.name, h.description, h.image, h.city, h.address;`;
+                    
         const hotel = await sequelize.query(sql, { type: Sequelize.QueryTypes.SELECT });
         return hotel;
     } catch (error) {
