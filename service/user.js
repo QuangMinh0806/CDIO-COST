@@ -5,6 +5,8 @@ const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { Sequelize, Op} = require("sequelize");
 const { Hotel } = require("../model/hotel");
+const { sequelize } = require("../config/mysql");
+const {kmeans} = require('ml-kmeans');
 
 const registerUser = async (data) => {
     try {
@@ -143,7 +145,7 @@ const getAllUserGroup  = async (id) => {
                     JOIN
                         hotel h ON r."HotelId" = h.id
                     WHERE
-                        h."UserId" = ${id}
+                        h."id" = ${id}
                     GROUP BY
                         b.id, u.id
                 )
@@ -159,6 +161,17 @@ const getAllUserGroup  = async (id) => {
 
     const user = await sequelize.query(sql, { type: Sequelize.QueryTypes.SELECT });
 
+    const data = user.map(customer => [
+        parseInt(customer.total),
+        parseInt(customer.price),
+    ]);
+
+    //đổi thành 3
+    const result = kmeans(data, 1);
+
+    user.forEach((user, index) => {
+        user.cluster = result.clusters[index];
+    });
     return user;
 }
 
@@ -182,6 +195,7 @@ const findUser  = async (data) => {
 
     return user;
 }
+
 
 
 module.exports = {registerUser, activeUser, loginUser, getUser, putUser, getAllUserGroup, putUserForAdmin, findUser}

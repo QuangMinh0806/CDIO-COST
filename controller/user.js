@@ -126,11 +126,12 @@ const findUser = async (req, res) => {
 
 
 const getAllUserGroup = async (req, res) => {
-    const user = await User.getAllUserGroup();
+    const user = await User.getAllUserGroup(req.params.id);
     res.status(200).json({
         success: true,
         message: "Danh sách người dùng",
         user
     });
 }
+
 module.exports = { registerUser, activeUser, loginUser, getUser, putUser, getAllUser, putUserForAdmin, findUser, getAllUserGroup }

@@ -9,11 +9,13 @@ const {createRoomDetail, getRoomDetail} = require("../controller/room_detail");
 const { getPricing, createPricing } = require("../controller/pricing");
 const { createServices, getAllServices, bookingServices } = require("../controller/services");
 const { getAllBookingForAdmin, getReportService, getReportTime, getReportRoom, getBookingById } = require("../controller/booking");
+const { getAllUserGroup } = require("../controller/user");
 
 
 //hotel
 receptionistRouter.post("/hotel", authentication, createHotel);
 receptionistRouter.get("/hotel/:id", getHotel);
+receptionistRouter.get("/hotel/group/:id", getAllUserGroup);
 
 //services
 receptionistRouter.post("/services", authentication, createServices);
